@@ -1,0 +1,25 @@
+image: python:3.8
+
+pipelines:
+  branches:
+    master:
+      - step: &test
+          name: Mock tests
+          script:
+            - echo "TODO add tests"
+      - step:
+          name: Deploy to production
+          deployment: production
+          trigger: manual
+          script:
+            - echo "Deploy new code $BITBUCKET_COMMIT"
+            - ssh -i /opt/atlassian/pipelines/agent/ssh/id_rsa -o 'StrictHostKeyChecking=no' root@195.2.92.129 "cd /home/www/td && git fetch && git checkout -f $BITBUCKET_COMMIT" # путь до ssh-ключа отличается от дефолтного
+            - echo "Restart Bot"
+            - ssh -i /opt/atlassian/pipelines/agent/ssh/id_rsa -o 'StrictHostKeyChecking=no' root@195.2.92.129 "systemctl restart tgbot && sleep 3 && systemctl status tgbot"
+            - echo "Restart Admin"
+            - ssh -i /opt/atlassian/pipelines/agent/ssh/id_rsa -o 'StrictHostKeyChecking=no' root@195.2.92.129 "systemctl restart tgadmin && sleep 3 && systemctl status tgadmin"
+
+    pull-requests:
+      # Цель запустится при наличии открытого PR на любой ветке
+      '**':
+        - step: *test
