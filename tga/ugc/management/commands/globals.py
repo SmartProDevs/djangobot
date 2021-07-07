@@ -5,7 +5,8 @@ BTN_LANG_RU = "Русский язык"
 STATES = {
     "reg": 1,
     "menu": 2,
-    "settings":3
+    "settings":3,
+    "feedback":4
 }
 LANGUAGE_CODE = {
     1: "uz",
@@ -28,6 +29,10 @@ SENDED_TO_ADMIN = {
 BTN_SEND_CONTACT = {
     1: "📞 Yuborish",
     2: "📞 Отправить"
+}
+BTN_NEWS = {
+    1:"📢 Yangiliklar",
+    2:"📢 Новости"
 }
 SEND_LOCATION = {
     1: "📍 Lokatsiya jo'nating",
@@ -77,12 +82,42 @@ TEXT_PRODUCT_DESC = {
     1: "Tarkibi:",
     2: "Состав:"
 }
+TEXT_GIVE_FEEDBACK = {
+    1: "Fikr va takliflaringizni yozib qoldiring:",
+    2: "Запишите свои мысли и предложения:"
 
+}
+BACK={
+    1:"Ortga",
+    2:"Назад"
+}
 AT_KORZINKA = {
     1: "Savatchada",
     2: "В корзине"
 }
+PAYMENT_TYPE_1 = {
+    1:"💴 naqd pul",
+    2: "💴 оплата наличными"
+}
+PAYMENT_TYPE_2 = {
+    1:"💳 karta",
+    2: "💳 карта"
+}
+PAYMENT = {
+    1: "Naqd",
+    2:"Karta"
+}
 
+CLEAR_CART = {
+    1:"🗑 Savatchani bo'shatish",
+    2:"🗑 Очистить корзину"
+
+}
+
+BUY = {
+    1:"📤 Buyurtma berish",
+    2:"📤 Заказать"
+}
 ALL = {
     1: "Jami",
     2: "Все"

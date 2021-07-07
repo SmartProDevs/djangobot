@@ -15,6 +15,10 @@ class Database:
         self.cur.execute(f"""update user set {key} = ? where chat_id = ?""", (value, chat_id))
         self.conn.commit()
 
+    def create_comment(self,user_id,username,comment):
+        self.cur.execute("""insert into comment(user_id, comment_text, username) values (?, ?, ?)""",
+                         (user_id,comment,username))
+        self.conn.commit()
     def get_user_by_chat_id(self, chat_id):
         self.cur.execute("""select * from user where chat_id = ?""", (chat_id, ))
         user = dict_fetchone(self.cur)
@@ -43,6 +47,11 @@ class Database:
         self.cur.execute("""select * from product where id = ?""", (product_id, ))
         product = dict_fetchone(self.cur)
         return product
+
+    def get_about_us(self):
+        self.cur.execute("""select * from about_us""")
+        about_us = dict_fetchall(self.cur)
+        return about_us
 
     def get_product_for_cart(self, product_id):
         self.cur.execute(
@@ -84,6 +93,14 @@ class Database:
             where order_id = ?""", (order_id, ))
         products = dict_fetchall(self.cur)
         return products
+
+    def get_news(self):
+        self.cur.execute(
+            """select * from 'ugc_new'"""
+        )
+        news=dict_fetchall(self.cur)
+        return news
+
 
 
 

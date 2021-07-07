@@ -13,11 +13,13 @@ from .database import Database
 from . import globals
 from . import methods
 import os
-ADMIN_ID=392330197
 
-base_path=settings.BASE_DIR
-base_path1=base_path.replace(os.sep,'/')
+ADMIN_ID = 392330197
+
+base_path = settings.BASE_DIR
+base_path1 = base_path.replace(os.sep, '/')
 db = Database(f'{base_path1}/db.sqlite3')
+
 
 def check(update, context):
     user = update.message.from_user
@@ -57,13 +59,13 @@ def check(update, context):
             reply_markup=ReplyKeyboardRemove()
         )
         context.user_data["state"] = globals.STATES["reg"]
-
-    elif not db_user["last_name"]:
-        update.message.reply_text(
-            text=globals.TEXT_ENTER_LAST_NAME[db_user['lang_id']],
-            reply_markup=ReplyKeyboardRemove()
-        )
-        context.user_data["state"] = globals.STATES["reg"]
+    #
+    # elif not db_user["last_name"]:
+    #     update.message.reply_text(
+    #         text=globals.TEXT_ENTER_LAST_NAME[db_user['lang_id']],
+    #         reply_markup=ReplyKeyboardRemove()
+    #     )
+    #     context.user_data["state"] = globals.STATES["reg"]
 
     elif not db_user["phone_number"]:
         buttons = [
@@ -127,12 +129,12 @@ def check_data_decorator(func):
                 )
                 context.user_data["state"] = globals.STATES["reg"]
 
-            elif not db_user["last_name"]:
-                update.message.reply_text(
-                    text=globals.TEXT_ENTER_LAST_NAME[db_user['lang_id']],
-                    reply_markup=ReplyKeyboardRemove()
-                )
-                context.user_data["state"] = globals.STATES["reg"]
+            # elif not db_user["last_name"]:
+            #     update.message.reply_text(
+            #         text=globals.TEXT_ENTER_LAST_NAME[db_user['lang_id']],
+            #         reply_markup=ReplyKeyboardRemove()
+            #     )
+            #     context.user_data["state"] = globals.STATES["reg"]
 
             elif not db_user["phone_number"]:
                 buttons = [
@@ -171,6 +173,7 @@ def message_handler(update, context):
     state = context.user_data.get("state", 0)
     db_user = db.get_user_by_chat_id(user.id)
 
+
     if state == 0:
         check(update, context)
 
@@ -195,12 +198,12 @@ def message_handler(update, context):
             db.update_user_data(user.id, "first_name", message)
             check(update, context)
 
-        elif not db_user["last_name"]:
-            db.update_user_data(user.id, "last_name", message)
-            buttons = [
-                [KeyboardButton(text=globals.BTN_SEND_CONTACT[db_user['lang_id']], request_contact=True)]
-            ]
-            check(update, context)
+        # elif not db_user["last_name"]:
+        #     db.update_user_data(user.id, "last_name", message)
+        #     buttons = [
+        #         [KeyboardButton(text=globals.BTN_SEND_CONTACT[db_user['lang_id']], request_contact=True)]
+        #     ]
+        #     check(update, context)
 
         elif not db_user["phone_number"]:
             db.update_user_data(user.id, "phone_number", message)
@@ -221,11 +224,12 @@ def message_handler(update, context):
                 total_price = 0
                 for cart, val in carts.items():
                     product = db.get_product_for_cart(int(cart))
-                    text += f"{val} x {product[f'cat_name_{lang_code}']} {product[f'name_{lang_code}']}\n"
+                    text += f"{val} x {product[f'name_{lang_code}']}\n"
                     total_price += product['price'] * val
-
-                text += f"\n{globals.ALL[db_user['lang_id']]}: {total_price}"
-                buttons.append([InlineKeyboardButton(text=globals.BTN_KORZINKA[db_user['lang_id']], callback_data="cart")])
+                    currency = "{:,.2f} UZS".format(total_price)
+                text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
+                buttons.append(
+                    [InlineKeyboardButton(text=globals.BTN_KORZINKA[db_user['lang_id']], callback_data="cart")])
 
             else:
                 text = globals.TEXT_ORDER[db_user['lang_id']]
@@ -245,12 +249,12 @@ def message_handler(update, context):
                 for cart, val in carts.items():
                     product = db.get_product_for_cart(int(cart))
                     text += f"{val} x {product[f'cat_name_{lang_code}']} {product[f'name_{lang_code}']}\n"
-                    total_price += product['price'] * val
-                text += f"\n{globals.ALL[db_user['lang_id']]}: {total_price} {globals.SUM[db_user['lang_id']]}"
+                    currency = "{:,.2f} UZS".format(total_price)
+                    text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
 
                 update.message.reply_text(
                     text=f"<b>Ma'lumotlarim:</b>\n\n"
-                         f"👤 <b>Ism-familiya:</b> {db_user['first_name']} {db_user['last_name']}\n"
+                         f"👤 <b>Ism-familiya:</b> {db_user['first_name']}\n"
                          f"📞 <b>Telefon raqam:</b> {db_user['phone_number']} \n\n"
                          f"📥 <b>Buyurtmalarim:</b> \n"
                          f"{text}",
@@ -262,10 +266,20 @@ def message_handler(update, context):
                     text=globals.NO_ZAKAZ[db_user['lang_id']])
 
         elif message == globals.BTN_ABOUT_US[db_user['lang_id']]:
+            about = db.get_about_us()
+
             update.message.reply_text(
-                text=globals.ABOUT_COMPANY[db_user['lang_id']],
+                text=about[0][f'text_{globals.LANGUAGE_CODE[db_user["lang_id"]]}'],
                 parse_mode="HTML"
             )
+
+        elif message == globals.BTN_COMMENTS[db_user['lang_id']]:
+            update.message.reply_text(
+                text=globals.TEXT_GIVE_FEEDBACK[db_user['lang_id']],
+                parse_mode="HTML"
+            )
+            context.user_data["state"] = globals.STATES["feedback"]
+
 
         elif message == globals.BTN_SETTINGS[db_user['lang_id']]:
             user = update.message.from_user
@@ -282,7 +296,27 @@ def message_handler(update, context):
             )
             context.user_data["state"] = globals.STATES["settings"]
 
-    elif state ==3:
+        elif message == globals.BTN_NEWS[db_user["lang_id"]]:
+
+            news=db.get_news()
+            last_news=news[-1]
+            date=last_news["posted_at"].split(' ')[0]
+
+            if last_news['image']==False:
+                update.message.reply_text(
+                    text=f"""<b>{last_news[f'heading_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}</b>\n{last_news[f'text_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}\n<i>{date}</i>""",
+                    parse_mode="HTML"
+                )
+            else:
+                path1 = settings.MEDIA_ROOT
+                newPath = path1.replace(os.sep, '/')
+                update.message.reply_photo(
+                    photo=open(f'{newPath}/{last_news["image"]}', "rb"),
+                    caption=f"""<b>{last_news[f'heading_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}</b>\n{last_news[f'text_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}\n<i>{date}</i>""",
+                    parse_mode="HTML"
+                )
+
+    elif state == 3:
         if message == globals.BTN_LANG_UZ:
             db.update_user_data(db_user['chat_id'], "lang_id", 1)
             context.user_data["state"] = globals.STATES["reg"]
@@ -298,13 +332,24 @@ def message_handler(update, context):
             update.message.reply_text(
                 text=globals.TEXT_LANG_WARNING
             )
-
+    elif state == 4:
+        update.message.reply_text(
+            text=f"Fikr va takliflaringiz uchun rahmat!"
+        )
+        comment=update.message.text
+        db.create_comment(user.id,user.username,comment)
+        context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"<i>{user.username}:</i>\n{comment}",
+            parse_mode='HTML'
+        )
+        context.user_data["state"] = globals.STATES["reg"]
+        check(update, context)
     else:
         update.message.reply_text("Salom")
 
 
 def inline_handler(update, context):
-
     query = update.callback_query
     data_sp = str(query.data).split("_")
     db_user = db.get_user_by_chat_id(query.message.chat_id)
@@ -320,11 +365,11 @@ def inline_handler(update, context):
 
                 if clicked_btn and clicked_btn['parent_id']:
                     buttons.append([InlineKeyboardButton(
-                        text="Back", callback_data=f"category_back_{clicked_btn['parent_id']}"
+                        text=globals.BACK[db_user["lang_id"]], callback_data=f"category_back_{clicked_btn['parent_id']}"
                     )])
                 else:
                     buttons.append([InlineKeyboardButton(
-                        text="Back", callback_data=f"category_back"
+                        text=globals.BACK[db_user["lang_id"]], callback_data=f"category_back"
                     )])
 
                 query.message.reply_text(
@@ -349,11 +394,12 @@ def inline_handler(update, context):
                     total_price = 0
                     for cart, val in carts.items():
                         product = db.get_product_for_cart(int(cart))
-                        text += f"{val} x {product[f'cat_name_{lang_code}']} {product[f'name_{lang_code}']}\n"
+                        text += f"{val} x {product[f'name_{lang_code}']}\n"
                         total_price += product['price'] * val
-
-                    text += f"\n{globals.ALL[db_user['lang_id']]}: {total_price}"
-                    buttons.append([InlineKeyboardButton(text=f"{globals.BTN_KORZINKA[db_user['lang_id']]}", callback_data="cart")])
+                        currency = "{:,.2f} UZS".format(total_price)
+                    text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
+                    buttons.append([InlineKeyboardButton(text=f"{globals.BTN_KORZINKA[db_user['lang_id']]}",
+                                                         callback_data="cart")])
 
                     query.message.reply_text(
                         text=text,
@@ -415,20 +461,20 @@ def inline_handler(update, context):
                         ],
                         [
                             InlineKeyboardButton(
-                                text="Back",
+                                text=globals.BACK[db_user["lang_id"]],
                                 callback_data=f"category_product_back_{product['category_id']}"
                             )
                         ]
                     ]
-########## dynamic_path #########################################################
-                    path1=settings.MEDIA_ROOT
+                    ########## dynamic_path #########################################################
+                    path1 = settings.MEDIA_ROOT
                     newPath = path1.replace(os.sep, '/')
                     query.message.reply_photo(
                         photo=open(f'{newPath}/{product["image"]}', "rb"),
                         caption=caption,
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons)
                     )
-###################################################################
+        ###################################################################
         elif data_sp[1] == "back":
             if len(data_sp) == 3:
                 parent_id = int(data_sp[2])
@@ -443,11 +489,11 @@ def inline_handler(update, context):
 
                 if clicked_btn and clicked_btn['parent_id']:
                     buttons.append([InlineKeyboardButton(
-                        text="Back", callback_data=f"category_back_{clicked_btn['parent_id']}"
+                        text=globals.BACK[db_user["lang_id"]], callback_data=f"category_back_{clicked_btn['parent_id']}"
                     )])
                 else:
                     buttons.append([InlineKeyboardButton(
-                        text="Back", callback_data=f"category_back"
+                        text=globals.BACK[db_user["lang_id"]], callback_data=f"category_back"
                     )])
 
             query.message.edit_reply_markup(
@@ -467,11 +513,11 @@ def inline_handler(update, context):
 
             if clicked_btn and clicked_btn['parent_id']:
                 buttons.append([InlineKeyboardButton(
-                    text="Back", callback_data=f"category_back_{clicked_btn['parent_id']}"
+                    text=globals.BACK[db_user["lang_id"]], callback_data=f"category_back_{clicked_btn['parent_id']}"
                 )])
             else:
                 buttons.append([InlineKeyboardButton(
-                    text="Back", callback_data=f"category_back"
+                    text=globals.BACK[db_user["lang_id"]], callback_data=f"category_back"
                 )])
 
             query.message.edit_reply_markup(
@@ -505,12 +551,12 @@ def inline_handler(update, context):
                 total_price = 0
                 for cart, val in carts.items():
                     product = db.get_product_for_cart(int(cart))
-                    text += f"{val} x {product[f'cat_name_{lang_code}']} {product[f'name_{lang_code}']}\n"
+                    text += f"{val} x  {product[f'name_{lang_code}']}\n"
                     total_price += product['price'] * val
+                    currency = "{:,.2f} UZS".format(total_price)
+                text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
 
-                text += f"\n{globals.ALL[db_user['lang_id']]}: {total_price}"
-
-                context.user_data.get('cart_text',text)
+                context.user_data.get('cart_text', text)
 
                 buttons.append([InlineKeyboardButton(text=f"{globals.BTN_KORZINKA}", callback_data="cart")])
 
@@ -526,10 +572,10 @@ def inline_handler(update, context):
         else:
             buttons = [
                 [
-                    InlineKeyboardButton(text="Buyurtma berish",  callback_data="order"),
-                    InlineKeyboardButton(text="Savatchani bo'shatish",  callback_data="cart_clear")
+                    InlineKeyboardButton(text=globals.BUY[db_user['lang_id']], callback_data="order"),
+                    InlineKeyboardButton(text=globals.CLEAR_CART[db_user['lang_id']], callback_data="cart_clear")
                 ],
-                [InlineKeyboardButton(text="Orqaga",  callback_data="cart_back")],
+                [InlineKeyboardButton(text=globals.BACK[db_user["lang_id"]], callback_data="cart_back")],
             ]
             query.message.edit_reply_markup(
                 reply_markup=InlineKeyboardMarkup(
@@ -540,33 +586,40 @@ def inline_handler(update, context):
     elif data_sp[0] == "order":
         if len(data_sp) > 1 and data_sp[1] == "payment":
             context.user_data['payment_type'] = int(data_sp[2])
+
             query.message.delete()
             query.message.reply_text(
                 text=globals.SEND_LOCATION[db_user["lang_id"]],
-                reply_markup=ReplyKeyboardMarkup([[KeyboardButton(text=globals.SEND_LOCATION[db_user["lang_id"]], request_location=True)]],
-                                                 resize_keyboard=True)
+                reply_markup=ReplyKeyboardMarkup(
+                    [[KeyboardButton(text=globals.SEND_LOCATION[db_user["lang_id"]], request_location=True)]],
+                    resize_keyboard=True)
             )
         else:
             query.message.edit_reply_markup(
                 reply_markup=InlineKeyboardMarkup(
                     [[
-                        InlineKeyboardButton(text="Naqd pul", callback_data="order_payment_1"),
-                        InlineKeyboardButton(text="Karta", callback_data="order_payment_2"),
+                        InlineKeyboardButton(text=globals.PAYMENT_TYPE_1[db_user["lang_id"]],
+                                             callback_data="order_payment_1"),
+                        InlineKeyboardButton(text=globals.PAYMENT_TYPE_2[db_user["lang_id"]],
+                                             callback_data="order_payment_2"),
                     ]]
                 )
             )
 
         # db.create_order(db_user['id'], context.user_data.get("carts", {}))
+
+
 def contact_handler(update, context):
     db_user = db.get_user_by_chat_id(update.message.from_user.id)
     contact = update.message.contact.phone_number
     db.update_user_data(update.message.from_user.id, "phone_number", contact)
     check(update, context)
 
+
 def location_handler(update, context):
     db_user = db.get_user_by_chat_id(update.message.from_user.id)
     location = update.message.location
-    payment_type = context.user_data.get("payment_type", None)
+    payment_type = context.user_data.get("payment_type", globals.PAYMENT[context.user_data['payment_type']])
     db.create_order(db_user['id'], context.user_data.get("carts", {}), payment_type, location)
     categories = db.get_categories_by_parent()
     buttons = methods.send_category_buttons(categories=categories, lang_id=db_user["lang_id"])
@@ -578,21 +631,21 @@ def location_handler(update, context):
         total_price = 0
         for cart, val in carts.items():
             product = db.get_product_for_cart(int(cart))
-            text += f"{val} x {product[f'cat_name_{lang_code}']} {product[f'name_{lang_code}']}\n"
+            text += f"{val} x {product[f'name_{lang_code}']}\n"
             total_price += product['price'] * val
-
-        text += f"\n{globals.ALL[db_user['lang_id']]}: {total_price} {globals.SUM[db_user['lang_id']]}"
+            currency = "{:,.2f} UZS".format(total_price)
+        text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
 
     context.bot.send_message(
         chat_id=ADMIN_ID,
         text=f"<b>Yangi buyurtma:</b>\n\n"
-             f"👤 <b>Ism-familiya:</b> {db_user['first_name']} {db_user['last_name']}\n"
-             f"📞 <b>Telefon raqam:</b> {db_user['phone_number']} \n\n"
+             f"👤 <b>Ism-familiya:</b> {db_user['first_name']}\n"
+             f"📞 <b>Telefon raqam:</b> {db_user['phone_number']} \n"
+             f"💸 <b>To'lov usuli:</b> {globals.PAYMENT[context.user_data['payment_type']]}\n\n"
              f"📥 <b>Buyurtma:</b> \n"
              f"{text}",
         parse_mode='HTML'
     )
-
 
     context.bot.send_location(
         chat_id=ADMIN_ID,
@@ -600,7 +653,6 @@ def location_handler(update, context):
         longitude=float(location.longitude)
     )
     methods.send_main_menu(context, update.message.from_user.id, db_user['lang_id'])
-
 
 
 class Command(BaseCommand):

@@ -49,7 +49,47 @@ class Product(models.Model):
         verbose_name = 'Mahsulot'
         verbose_name_plural = 'Mahsulotlar'
 
+class About(models.Model):
+    text_uz = models.TextField()
+    text_ru = models.TextField()
 
+    def __str__(self):
+        return f'{self.text_uz}'
+
+    class Meta:
+        db_table = 'about_us'
+        managed = False
+        verbose_name = 'Biz haqimizda'
+        verbose_name_plural = 'Biz haqimizda'
+
+class Comment(models.Model):
+    user_id = models.IntegerField()
+    comment_text = models.TextField()
+    username = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f'{self.username}'
+
+    class Meta:
+        db_table = 'comment'
+        managed = False
+        verbose_name = 'Kommentariya'
+        verbose_name_plural = 'Kommentariyalar'
+
+class New(models.Model):
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
+    posted_at = models.DateTimeField(auto_now_add=True)
+    heading_uz = models.CharField(max_length=500)
+    heading_ru = models.CharField(max_length=500)
+    text_uz = models.TextField()
+    text_ru = models.TextField()
+
+    def __str__(self):
+        return f'{self.heading_uz}'
+
+    class Meta:
+        verbose_name: "Yangiliklar"
+        verbose_name_plural: "Yangiliklar"
 
 
 
