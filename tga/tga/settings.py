@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
+    'delx.pythonanywhere.com'
 ]
 
 
@@ -118,6 +119,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Настройки бота
 
-TOKEN = '1858866656:AAFAD32Jx01qtEsMlh7charL1KnUf31XirM'
+TOKEN = '1869550850:AAHHfcN5ReFYr_1dg-vYAqTG-FJCYX_ogjQ'
 
 # PROXY_URL = 'https://telegg.ru/orig/bot'

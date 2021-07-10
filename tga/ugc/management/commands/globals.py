@@ -6,7 +6,8 @@ STATES = {
     "reg": 1,
     "menu": 2,
     "settings":3,
-    "feedback":4
+    "feedback":4,
+    "time":5
 }
 LANGUAGE_CODE = {
     1: "uz",
@@ -118,6 +119,30 @@ BUY = {
     1:"📤 Buyurtma berish",
     2:"📤 Заказать"
 }
+SEND_ALL = {
+    1: "📤 Jo'natish",
+    2: "📤 Отправить"
+}
+
+DELIVERYTEXT = {
+    1: "Yetkazib berish turi:",
+    2: "Тип доставки:"
+}
+ENTER_TIME = {
+    1: "Olib ketish vaqtingizni yozing:",
+    2:"Запишите время получения:"
+}
+
+DELIVERY_TYPE_1 = {
+    1: "🏃 Olib ketish",
+    2: "🏃 ‍Собой"
+}
+DELIVERY_TYPE_2 = {
+    1: "🚙 Yetkazib berish",
+    2: "🚙 Доставка"
+
+}
+
 ALL = {
     1: "Jami",
     2: "Все"
@@ -127,7 +152,10 @@ ZAKAZ = {
     1: "Buyurtma",
     2: "Заказ"
 }
-
+CALL_YOU_LATER = {
+    1:"Buyurtmangiz qabul qilindi. Tez orada sizga aloqaga chiqamiz.",
+    2:"Ваш заказ принят. Мы скоро свяжемся с вами."
+}
 SUM = {
     1: "so'm",
     2: "сум"

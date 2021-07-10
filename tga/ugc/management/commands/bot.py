@@ -14,7 +14,7 @@ from . import globals
 from . import methods
 import os
 
-ADMIN_ID = 392330197
+ADMIN_ID = 1666372263
 
 base_path = settings.BASE_DIR
 base_path1 = base_path.replace(os.sep, '/')
@@ -249,6 +249,7 @@ def message_handler(update, context):
                 for cart, val in carts.items():
                     product = db.get_product_for_cart(int(cart))
                     text += f"{val} x {product[f'cat_name_{lang_code}']} {product[f'name_{lang_code}']}\n"
+                    total_price += product['price'] * val
                     currency = "{:,.2f} UZS".format(total_price)
                     text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
 
@@ -316,6 +317,10 @@ def message_handler(update, context):
                     parse_mode="HTML"
                 )
 
+            update.message.reply_text(
+                text = "Buyurtmangiz qabul qilindi. Tez orada sizga aloqaga chiqamiz."
+            )
+
     elif state == 3:
         if message == globals.BTN_LANG_UZ:
             db.update_user_data(db_user['chat_id'], "lang_id", 1)
@@ -345,9 +350,37 @@ def message_handler(update, context):
         )
         context.user_data["state"] = globals.STATES["reg"]
         check(update, context)
-    else:
-        update.message.reply_text("Salom")
 
+    elif state == 5:
+        context.user_data['time'] = update.message.text
+
+        carts = context.user_data.get("carts")
+        text = f"{globals.AT_KORZINKA[db_user['lang_id']]}:\n\n"
+        lang_code = globals.LANGUAGE_CODE[db_user['lang_id']]
+        total_price = 0
+        for cart, val in carts.items():
+            product = db.get_product_for_cart(int(cart))
+            text += f"{val} x {product[f'name_{lang_code}']}\n"
+            total_price += product['price'] * val
+            currency = "{:,.2f} UZS".format(total_price)
+        text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
+
+        context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"<b>Yangi buyurtma:</b>\n\n"
+                 f"👤 <b>Turi:</b> 🏃 Olib ketish\n"
+                 f"👤 <b>Ism-familiya:</b> {db_user['first_name']}\n"
+                 f"📞 <b>Telefon raqam:</b> {db_user['phone_number']} \n"
+                 f"⏱ <b>Olib ketish vaqti:</b> {context.user_data['time']} \n"
+                 # f"💸 <b>To'lov usuli:</b> {globals.PAYMENT[context.user_data['payment_type']]}\n\n"
+                 f"📥 <b>Buyurtma:</b> \n"
+                 f"{text}",
+            parse_mode='HTML'
+        )
+        update.message.reply_text(
+            text =globals.CALL_YOU_LATER[db_user["lang_id"]]
+        )
+        context.user_data['state'] = 2
 
 def inline_handler(update, context):
     query = update.callback_query
@@ -558,7 +591,7 @@ def inline_handler(update, context):
 
                 context.user_data.get('cart_text', text)
 
-                buttons.append([InlineKeyboardButton(text=f"{globals.BTN_KORZINKA}", callback_data="cart")])
+                buttons.append([InlineKeyboardButton(text=f"{globals.BTN_KORZINKA[db_user['lang_id']]}", callback_data="cart")])
 
             else:
                 text = globals.TEXT_ORDER[db_user['lang_id']]
@@ -584,29 +617,51 @@ def inline_handler(update, context):
             )
 
     elif data_sp[0] == "order":
-        if len(data_sp) > 1 and data_sp[1] == "payment":
-            context.user_data['payment_type'] = int(data_sp[2])
-
+        if len(data_sp)>1 and data_sp[2]=="2":
+            if len(data_sp)>3 and data_sp[3] == "payment":
+                context.user_data['payment_type'] = int(data_sp[4])
+                query.message.delete()
+                query.message.reply_text(
+                    text=globals.SEND_LOCATION[db_user["lang_id"]],
+                    reply_markup=ReplyKeyboardMarkup(
+                        [[KeyboardButton(text=globals.SEND_LOCATION[db_user["lang_id"]], request_location=True)]],
+                        resize_keyboard=True)
+                )
+            else:
+                query.message.edit_reply_markup(
+                    reply_markup=InlineKeyboardMarkup(
+                        [[
+                            InlineKeyboardButton(text=globals.PAYMENT_TYPE_1[db_user["lang_id"]],
+                                                 callback_data="order_delivery_2_payment_1"),
+                            InlineKeyboardButton(text=globals.PAYMENT_TYPE_2[db_user["lang_id"]],
+                                                 callback_data="order_delivery_2_payment_2"),
+                        ]]
+                    )
+                )
+        elif len(data_sp)>1 and data_sp[2]=="1":
             query.message.delete()
             query.message.reply_text(
-                text=globals.SEND_LOCATION[db_user["lang_id"]],
-                reply_markup=ReplyKeyboardMarkup(
-                    [[KeyboardButton(text=globals.SEND_LOCATION[db_user["lang_id"]], request_location=True)]],
-                    resize_keyboard=True)
+                text=globals.ENTER_TIME[db_user["lang_id"]],
             )
+            context.user_data['state']=5
         else:
+
             query.message.edit_reply_markup(
                 reply_markup=InlineKeyboardMarkup(
                     [[
-                        InlineKeyboardButton(text=globals.PAYMENT_TYPE_1[db_user["lang_id"]],
-                                             callback_data="order_payment_1"),
-                        InlineKeyboardButton(text=globals.PAYMENT_TYPE_2[db_user["lang_id"]],
-                                             callback_data="order_payment_2"),
+                        InlineKeyboardButton(text=globals.DELIVERY_TYPE_1[db_user["lang_id"]],
+                                             callback_data="order_delivery_1"),
+                        InlineKeyboardButton(text=globals.DELIVERY_TYPE_2[db_user["lang_id"]],
+                                             callback_data="order_delivery_2"),
                     ]]
                 )
             )
 
+
+
         # db.create_order(db_user['id'], context.user_data.get("carts", {}))
+
+
 
 
 def contact_handler(update, context):
