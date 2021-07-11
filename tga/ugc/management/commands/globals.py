@@ -13,6 +13,10 @@ LANGUAGE_CODE = {
     1: "uz",
     2: "ru"
 }
+OUR_LOCATION = {
+    1: "Buyurtmangiz qabul qilindi. Bizning manzil:",
+    2:"Ваш заказ принят. Наш адресс:"
+}
 TEXT_LANG_WARNING = "Iltimos tillardan birini tanlang!\nПожалуйста, выберите один из языков!"
 TEXT_ENTER_FIRST_NAME = {
     1: "👤 Iltimos ismingizni kiriting:",

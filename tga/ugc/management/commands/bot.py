@@ -378,7 +378,12 @@ def message_handler(update, context):
             parse_mode='HTML'
         )
         update.message.reply_text(
-            text =globals.CALL_YOU_LATER[db_user["lang_id"]]
+            text =globals.OUR_LOCATION[db_user["lang_id"]]
+        )
+        context.bot.send_location(
+            chat_id=user.id,
+            latitude=MY_LATITUDE,
+            longitude=MY_LONGITUDE
         )
         context.user_data['state'] = 2
 
