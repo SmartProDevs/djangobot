@@ -23,7 +23,12 @@ class Database:
         self.cur.execute("""select * from user where chat_id = ?""", (chat_id, ))
         user = dict_fetchone(self.cur)
         return user
-
+###########GET ALL USERS#########
+    def get_all_users(self):
+        self.cur.execute("""select * from user""")
+        user = dict_fetchall(self.cur)
+        return user
+#################
     def get_categories_by_parent(self, parent_id=None):
         if parent_id:
             self.cur.execute("""select * from category where parent_id = ?""", (parent_id, ))

@@ -173,6 +173,36 @@ def message_handler(update, context):
     state = context.user_data.get("state", 0)
     db_user = db.get_user_by_chat_id(user.id)
 
+#####SEND NEWS TO ALL############
+    if message == "So'nggi yangilikni barchaga jo'natish":
+        users = db.get_all_users()
+        list1=[]
+        for u in users:
+            list1.append(u['chat_id'])
+        for ch in list1:
+            try:
+                news=db.get_news()
+                last_news=news[-1]
+                date=last_news["posted_at"].split(' ')[0]
+
+                if last_news['image']==False:
+                    context.bot.send_message(
+                        chat_id=ch,
+                        text=f"""<b>{last_news[f'heading_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}</b>\n{last_news[f'text_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}\n<i>{date}</i>""",
+                        parse_mode="HTML"
+                    )
+                else:
+                    path1 = settings.MEDIA_ROOT
+                    newPath = path1.replace(os.sep, '/')
+                    context.bot.send_photo(
+                        chat_id=ch,
+                        photo=open(f'{newPath}/{last_news["image"]}', "rb"),
+                        caption=f"""<b>{last_news[f'heading_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}</b>\n{last_news[f'text_{globals.LANGUAGE_CODE[db_user["lang_id"]]}']}\n<i>{date}</i>""",
+                        parse_mode="HTML"
+                    )
+            except Exception:
+                continue
+
 
     if state == 0:
         check(update, context)
@@ -345,6 +375,25 @@ def message_handler(update, context):
         )
         context.user_data["state"] = globals.STATES["reg"]
         check(update, context)
+    elif state[0] == "admin":
+        msg = update.message.text
+        user = update.message.from_user.username
+        context.bot.send_message(
+            chat_id=state[1],
+            text=msg
+        )
+        context.bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"Xabar {user}ga jo'natildi",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(callback_data=f'admin_{state[1]}', text="✉ Yangi xabar jo'natish"),
+                 InlineKeyboardButton(callback_data='mainmenu', text="🏠 Asosiy menyu")],
+
+            ])
+
+        )
+
+
     else:
         update.message.reply_text("Salom")
 
@@ -608,6 +657,15 @@ def inline_handler(update, context):
 
         # db.create_order(db_user['id'], context.user_data.get("carts", {}))
 
+    elif data_sp[0] == "admin":
+        query.message.reply_text(text="Xabar matnini kiriting:", reply_markup=ReplyKeyboardRemove())
+
+        context.user_data["state"] = data_sp
+    elif data_sp[0] == "mainmenu":
+
+        methods.send_main_menu(context, query.message.chat.id, db_user['lang_id'])
+        context.user_data["state"] = globals.STATES["menu"]
+
 
 def contact_handler(update, context):
     db_user = db.get_user_by_chat_id(update.message.from_user.id)
@@ -636,6 +694,15 @@ def location_handler(update, context):
             currency = "{:,.2f} UZS".format(total_price)
         text += f"\n{globals.ALL[db_user['lang_id']]}: {currency}"
 
+    admin_button=[
+        [InlineKeyboardButton(text="✉ xabar jo'natish",callback_data=f"admin_{update.message.from_user.id}")]
+    ]
+
+    context.bot.send_location(
+        chat_id=ADMIN_ID,
+        latitude=float(location.latitude),
+        longitude=float(location.longitude)
+    )
     context.bot.send_message(
         chat_id=ADMIN_ID,
         text=f"<b>Yangi buyurtma:</b>\n\n"
@@ -644,14 +711,15 @@ def location_handler(update, context):
              f"💸 <b>To'lov usuli:</b> {globals.PAYMENT[context.user_data['payment_type']]}\n\n"
              f"📥 <b>Buyurtma:</b> \n"
              f"{text}",
-        parse_mode='HTML'
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(admin_button)
     )
 
-    context.bot.send_location(
-        chat_id=ADMIN_ID,
-        latitude=float(location.latitude),
-        longitude=float(location.longitude)
+    context.bot.send_message(
+        chat_id=update.message.from_user.id,
+        text="Buyurtmangiz qabul qilindi. Adminllarimiz tez orada siz bilan bog'lanadi"
     )
+
     methods.send_main_menu(context, update.message.from_user.id, db_user['lang_id'])
 
 

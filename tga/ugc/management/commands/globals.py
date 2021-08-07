@@ -6,7 +6,8 @@ STATES = {
     "reg": 1,
     "menu": 2,
     "settings":3,
-    "feedback":4
+    "feedback":4,
+    "admin":5
 }
 LANGUAGE_CODE = {
     1: "uz",

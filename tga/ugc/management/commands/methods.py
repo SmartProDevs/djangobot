@@ -1,6 +1,7 @@
 from telegram import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from . import globals
 
+ADMIN_ID = 392330197
 
 def send_main_menu(context, chat_id, lang_id, message_id=None):
     buttons = [
@@ -9,6 +10,16 @@ def send_main_menu(context, chat_id, lang_id, message_id=None):
         [KeyboardButton(text=globals.BTN_COMMENTS[lang_id]), KeyboardButton(text=globals.BTN_SETTINGS[lang_id])],
         [KeyboardButton(text=globals.BTN_NEWS[lang_id])],
     ]
+    ##SEND NEWS TO ALL #############
+    if chat_id == ADMIN_ID:
+        buttons = [
+            [KeyboardButton(text="So'nggi yangilikni barchaga jo'natish")],
+            [KeyboardButton(text=globals.BTN_ORDER[lang_id])],
+            [KeyboardButton(text=globals.BTN_MY_ORDERS[lang_id]), KeyboardButton(text=globals.BTN_ABOUT_US[lang_id])],
+            [KeyboardButton(text=globals.BTN_COMMENTS[lang_id]), KeyboardButton(text=globals.BTN_SETTINGS[lang_id])],
+            [KeyboardButton(text=globals.BTN_NEWS[lang_id])],
+        ]
+
     if message_id:
         context.bot.edit_message_text(
             chat_id=chat_id,
@@ -28,6 +39,7 @@ def send_main_menu(context, chat_id, lang_id, message_id=None):
                 resize_keyboard=True
             )
         )
+##SEND NEWS TO ALL END #############
 
 
 def send_category_buttons(categories, lang_id):
